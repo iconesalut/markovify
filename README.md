@@ -66,6 +66,9 @@ Notes:
 
 - By default, `markovify.Text` tries to generate sentences that do not simply regurgitate chunks of the original text. The default rule is to suppress any generated sentences that exactly overlaps the original text by 15 words or 70% of the sentence's word count. You can change this rule by passing `max_overlap_ratio` and/or `max_overlap_total` to the `make_sentence` method. Alternatively, this check can be disabled entirely by passing `test_output` as False.
 
+-This fork provide also a new feature to "force" the topic of the sentence, for that you can set in th emake_sentence method
+ The `topic` argument by a list of word that you want to appear to the result. Moreover, you can make a filter with `minimum_topic_word`wich is the number of words from the topic list at least you want to appear in the sentence.
+
 ## Advanced Usage
 
 ### Specifying the model's state size
