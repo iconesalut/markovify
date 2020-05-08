@@ -210,7 +210,7 @@ class Text(object):
             prefix = []
 
         for _ in range(tries):
-            words = prefix + self.chain.walk(init_state)
+            words = prefix + self.chain.walk(init_state, topic)
             if max_words != None and len(words) > max_words:
                 continue
             if test_output and hasattr(self, "rejoined_text"):
