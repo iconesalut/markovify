@@ -25,6 +25,17 @@ def accumulate(iterable, func=operator.add):
         total = func(total, element)
         yield total
 
+def common(lst, dct):
+    if list(set(lst) & set(dct.keys())) == []:
+        return dct
+    else:
+        ndct = {}
+        for key in dct:
+            if key in lst:
+                ndct[key]=dct[key]
+        
+        return ndct
+
 def compile_next(next_dict):
     words = list(next_dict.keys())
     cff = list(accumulate(next_dict.values()))
@@ -115,26 +126,50 @@ class Chain(object):
         selection = choices[bisect.bisect(cumdist, r)]
         return selection
 
-    def gen(self, init_state=None):
+    def movet(self, state, topic):
+        """
+        Given a state, choose the next item at random.
+        """
+        if self.compiled:
+            choices, cumdist = self.model[state]
+        elif state == tuple([ BEGIN ] * self.state_size):
+            choices = self.begin_choices
+            cumdist = self.begin_cumdist
+        else:
+            choices, weights = zip(*common(topic, self.model[state]).items())
+            cumdist = list(accumulate(weights))
+        r = random.random() * cumdist[-1]
+        selection = choices[bisect.bisect(cumdist, r)]
+        if selection in topic:
+            topic.remove(selection)
+        return selection, topic
+
+    def gen(self, init_state=None, topic=[]):
         """
         Starting either with a naive BEGIN state, or the provided `init_state`
         (as a tuple), return a generator that will yield successive items
         until the chain reaches the END state.
         """
         state = init_state or (BEGIN,) * self.state_size
+        self.topic_match = 0
+        init = len(topic)
         while True:
-            next_word = self.move(state)
+            if len(topic)==0:
+                next_word = self.move(state)
+            else:
+                next_word, topic = self.movet(state, topic)
             if next_word == END: break
             yield next_word
+            self.topic_match = init-len(topic)
             state = tuple(state[1:]) + (next_word,)
 
-    def walk(self, init_state=None):
+    def walk(self, init_state=None, topic=[]):
         """
         Return a list representing a single run of the Markov model, either
         starting with a naive BEGIN state, or the provided `init_state`
         (as a tuple).
         """
-        return list(self.gen(init_state))
+        return list(self.gen(init_state, topic))
 
     def to_json(self):
         """
