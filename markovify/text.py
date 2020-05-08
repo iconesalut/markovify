@@ -175,7 +175,7 @@ class Text(object):
                 return False
         return True
 
-    def make_sentence(self, init_state=None, **kwargs):
+    def make_sentence(self, init_state=None, topic=[], minimum_topic_words=0, **kwargs):
         """
         Attempts `tries` (default: 10) times to generate a valid sentence,
         based on the model and `test_sentence_output`. Passes `max_overlap_ratio`
@@ -214,9 +214,9 @@ class Text(object):
             if max_words != None and len(words) > max_words:
                 continue
             if test_output and hasattr(self, "rejoined_text"):
-                if self.test_sentence_output(words, mor, mot):
+                if self.test_sentence_output(words, mor, mot) and self.chain.topic_match >= minimum_topic_words:
                     return self.word_join(words)
-            else:
+            elif self.chain.topic_match >= minimum_topic_words:
                 return self.word_join(words)
         return None
 
